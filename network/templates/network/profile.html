@@ -1,0 +1,35 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class=profileheader>
+        {% if profile.profilepictureurl %}
+            <img class="profilepic" src="{{ profile.profilepictureurl }}">
+        {% endif %}
+        <h1>{{ profile.first_name }} {{ profile.last_name }}</h1>
+        {% if not request.user.id == profile.id %}
+            {% if followstatus %}
+                <button type="submit" id="followbutton" data-followee="{{profile.id}}" onclick=togglefollow()>Following</button>
+            {% else %}
+                <button type="submit" id="followbutton" data-followee="{{profile.id}}" onclick=togglefollow()>Follow</button>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    
+    <div class="posts">    
+        {% for post in profile.postsbyuser.all %}
+            <article class="individualpost">
+                {% if post.imageurl %}
+                    <div class="postimage" style='background: url("{{ post.imageurl }}") no-repeat center center'></div>
+                {% elif post.videourl %}
+                    <div class="postvideo">
+                        <iframe width = 100% src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+                    </div>
+                {% endif %}
+                <p>{{ post.content }}</p>
+                <p><em>{{ post.datetime }}</em></p>
+            </article>
+        {% endfor %}
+    </div>
+
+{% endblock %}
