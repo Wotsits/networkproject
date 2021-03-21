@@ -1,30 +1,192 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models.query import QuerySet
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.core.paginator import Paginator
+from django.utils.decorators import method_decorator 
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import serializers
+from network.serializers import LikeSerializer, PostSerializer, CommentSerializer
+
 import json
 
 from .models import User, Post, Comment, Like, Follow
 from .forms import NewPostForm, NewCommentForm
 
-
 def index(request):
-    posts = Post.objects.all().order_by('datetime').reverse()
-    p = Paginator(posts, 2)
-    for page in p:
-        print(page.number)
-        for post in page:
-            print(post)
+    return render(request, "network/index.html")
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 10
+
+#sets the commment pagination size
+class CommentResultsSetPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 3
+
+##############################################################
+
+'''
+API classes start here
+'''
+
+class apiserveposts(ListAPIView):
+    '''
+    CBV for serve posts list
+    '''
+
+    serializer_class = PostSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        
+        source = self.request.GET['source']
+        if source == 'index':
+            return Post.objects.all().order_by('datetime').reverse()
+        elif source =='follow':
+            following = Follow.objects.filter(follower=self.request.user)
+            # MY FIRST FREAKING LIST COMPREHENSION!!!  YEEEHAAAAWWWW!!!!
+            followeelist = [x.followee for x in following]
+            return Post.objects.filter(user__in=followeelist)
+        else:
+            username = self.request.GET['username']
+            print(username)
+            user = User.objects.get(username=username)
+            return Post.objects.filter(user=user).order_by('datetime').reverse()
+ 
+class apiservecommentsbypost(ListAPIView):
+    serializer_class = CommentSerializer
+    paginations_class = CommentResultsSetPagination
+    permission_class = [IsAuthenticated]
+
+    def get_queryset(self):
+        postid = self.request.GET['postid']
+        post = Post.objects.get(id=postid)
+        return Comment.objects.filter(post=post).order_by('datetime').reverse()
+
+
+class apiservepostdetail(RetrieveUpdateDestroyAPIView):
+    queryset            = Post.objects.all()
+    serializer_class    = PostSerializer
+
+class apicreatepost(CreateAPIView):
+    serializer_class    = PostSerializer
+
+    # this deals with the fact that the form does not submit the user who created the post  .  
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+def createcomment(request):
+    if request.method == "POST":
+        user    = request.user
+        payload = json.loads(request.body)
+        postid  = payload["postid"]
+        post    = Post.objects.get(id=postid)
+        content = payload["content"]
+        newcomment = Comment(user=user, post=post, content=content)
+        newcomment.save()
+
+        return JsonResponse ({
+                "id": newcomment.id,
+                "user": {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "username": user.username
+                },
+                "content": content
+        })
+
+
+@login_required
+def apicreatelike(request):
+    if request.method == "POST":
+        user    = request.user
+        payload = json.loads(request.body)
+        postid  = payload["id"]
+        post    = Post.objects.get(id=postid)
+        like    = Like(user=user, post=post)
+        like.save()
+
+        return JsonResponse ({
+            "postid": postid,
+            "user": user.username
+        })
     
-    return render(request, "network/index.html", {
-        "title": "Welcome to Network",
-        "posts": posts
-    })
+    else:
+        HttpResponse("This route does not accept a GET request.")
+
+@login_required
+def apideletelike(request):
+    if request.method == "POST":
+        user    = request.user
+        payload = json.loads(request.body)
+        postid  = payload["id"]
+        post    = Post.objects.get(id=postid)
+        like    = Like.objects.get(user=user, post=post)
+        like.delete()
+
+        return JsonResponse ({
+            "postid": postid,
+            "user": user.username,
+            "status": "deleted"
+        })
+    
+    else:
+        HttpResponse("This route does not accept a GET request.")
+
+@login_required
+def apilikecountandstatus(request):
+    if request.method == "GET":
+        user        = request.user
+        postid      = request.GET['id']
+        post        = Post.objects.get(id=postid)
+        likecount   = Like.objects.filter(post=post).count()
+        likestatus  = False
+        try: 
+            Like.objects.get(post=post, user=user)
+            likestatus = True
+        except:
+            likestatus = False
+        
+        return JsonResponse ({
+            "likecount": likecount,
+            "likestatus": likestatus
+        })
+
+@login_required
+def newpost(request):
+    if request.method == "POST":
+
+        content = request.POST["content"]
+        imageurl = request.POST["imageurl"]
+        videourl = request.POST["videourl"]
+
+        # creates and saves new Post object.
+        post = Post(content=content, imageurl=imageurl, videourl=videourl, user=request.user)
+        post.save()
+
+        # redirects to myprofile
+        return JsonResponse ({
+            "content": content,
+            "imageurl": imageurl,
+            "videourl": videourl,
+            "user": request.user.username
+        })
+
+##############################################################
 
 
 def login_view(request):
@@ -56,6 +218,7 @@ def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
+        profilepicurl = request.POST["profilepicurl"]
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -78,40 +241,20 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-@login_required
-def newpost(request):
-    if request.method == "POST":
-        # creates a NewPostForm object form the posted data.
-        form = NewPostForm(request.POST)
-        
-        # checks if the data is valid before extracting the data into individual variables. 
-        if form.is_valid():
-            content = form.cleaned_data["content"]
-            imageurl = form.cleaned_data["imageurl"]
-            videourl = form.cleaned_data["videourl"]
 
-            # creates and saves new Post object.
-            post = Post(content=content, imageurl=imageurl, videourl=videourl, user=request.user)
-            post.save()
-
-            # redirects to myprofile
-            return HttpResponseRedirect(reverse("profile", args=(request.user.username,)))
     
-    else:
-        # creates a blank NewPostForm
-        form = NewPostForm()
-
-        # renders the newpost.html template, passing in the blank NewPostForm
-        return render(request, "network/newpost.html", {
-            "form": form
-        })
 
 def profile(request, username):
+    print(username)
     profile = User.objects.get(username=username)
     followstatus = Follow.objects.filter(followee=profile, follower=request.user).count() > 0
+    followercount = Follow.objects.filter(followee=profile).count()
+    followeecount = Follow.objects.filter(follower=profile).count()
     return render(request, "network/profile.html", {
         'followstatus': followstatus,
-        'profile': profile
+        'profile': profile,
+        'followcount': followercount,
+        'followeecount': followeecount,
     })
 
 @login_required
@@ -138,19 +281,10 @@ def following(request):
         else:
             Follow.objects.filter(follower=follower, followee=followee).delete()
 
-        return HttpResponse(status=204) 
-    
-    else: 
-        # get a list of the follows where this user is the follower. 
-        follows = Follow.objects.filter(follower=request.user)
-
-        # extract from that query set the users who are followed.  
-        followed = [followee.followee for followee in follows]
-        
-        # get the posts by those users.  
-        followedposts = Post.objects.filter(user__in=followed)
-
-        return render(request, "network/index.html", {
-            'title': "Posts from people you follow",
-            'posts': followedposts
+        return JsonResponse({
+            'status': '204' 
         })
+            
+    else: 
+
+        return render(request, "network/following.html")

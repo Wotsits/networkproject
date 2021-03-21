@@ -6,8 +6,6 @@ import datetime
 
 class User(AbstractUser):
     profilepictureurl = models.CharField(max_length=1000, blank=True)
-    fromlocation = models.CharField(max_length=255, blank=True)
-    currentlocation = models.CharField(max_length=255, blank=True)
 
 
 class Post(models.Model):
@@ -17,14 +15,22 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="postsbyuser")
     datetime = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['datetime']
+
     def __str__(self):
         return(f'{self.user} posted post {self.id}')
+    
 
 class Comment(models.Model):
     content = models.CharField(max_length=1000)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="commentsbyuser")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="commentsbypost")
+    datetime = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['datetime']
+        
     def __str__(self):
         return(f'{self.user} commented on {self.post}')
 

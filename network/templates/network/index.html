@@ -1,31 +1,14 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div class="profileheader">
-        <h1>{{title}}</h1>
-    </div>    
-
-    <div class="posts">
-            
-        {% for post in posts %}
-        <article class="individualpost">
-            <div class="postheader">
-                {% if post.user.profilepictureurl %}
-                    <img class="profilepic" src="{{ post.user.profilepictureurl }}">
-                {% endif %}
-                <a href="{% url 'profile' post.user.username %}">
-                    <h4>{{ post.user.first_name }} {{ post.user.last_name }}</h4>
-                </a>
-            </div>
-            {% if post.imageurl %}
-                <div class="postimage" style='background: url("{{ post.imageurl }}") no-repeat center center'></div>
-            {% elif post.videourl %}
-                <div class="postvideo">
-                    <iframe width = 100% src="{{ post.videourl }}"></iframe>
-                </div>
-            {% endif %}
-            <p>{{ post.content }}</p>
-        </article>
-        {% endfor %}
+    <div id="posts">
+        <!--populated by JS with call to API-->
     </div>
+
+    <div id="postnewedit">
+        <!--hidden div that contains appears from floor of screen allowing new post or edit of existing post-->
+    </div> 
+
+    {% csrf_token %}
+
 {% endblock %}

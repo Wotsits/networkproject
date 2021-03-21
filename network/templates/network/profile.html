@@ -6,6 +6,11 @@
             <img class="profilepic" src="{{ profile.profilepictureurl }}">
         {% endif %}
         <h1>{{ profile.first_name }} {{ profile.last_name }}</h1>
+        {% if followcount == 1 %}
+            <div class="followcount"><p class="countnumber">{{ followcount }}</p><p> follower ~~ | ~~ following {{ followeecount }}</p></div>
+        {% else %}
+            <div class="followcount"><p class="countnumber">{{ followcount }}</p><p> followers ~~ | ~~ following {{ followeecount }}</p></div>
+        {% endif %}
         {% if not request.user.id == profile.id %}
             {% if followstatus %}
                 <button type="submit" id="followbutton" data-followee="{{profile.id}}" onclick=togglefollow()>Following</button>
@@ -16,20 +21,14 @@
     </div>
     
     
-    <div class="posts">    
-        {% for post in profile.postsbyuser.all %}
-            <article class="individualpost">
-                {% if post.imageurl %}
-                    <div class="postimage" style='background: url("{{ post.imageurl }}") no-repeat center center'></div>
-                {% elif post.videourl %}
-                    <div class="postvideo">
-                        <iframe width = 100% src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-                    </div>
-                {% endif %}
-                <p>{{ post.content }}</p>
-                <p><em>{{ post.datetime }}</em></p>
-            </article>
-        {% endfor %}
+    <div id="posts">    
+        <!--populated by JS with call to API-->
     </div>
+
+    <div id="postnewedit">
+        <!--hidden div that contains appears from floor of screen allowing new post or edit of existing post-->
+    </div> 
+
+    {%csrf_token%}
 
 {% endblock %}

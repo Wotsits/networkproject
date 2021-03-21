@@ -1,0 +1,14 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div id="posts">
+        <!--populated by JS with call to API-->
+    </div>
+
+    <div id="postnewedit">
+        <!--hidden div that contains appears from floor of screen allowing new post or edit of existing post-->
+    </div> 
+     
+    {% csrf_token %}
+    
+{% endblock %}

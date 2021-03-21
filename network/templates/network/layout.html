@@ -6,35 +6,36 @@
         <title>{% block title %}Social Network{% endblock %}</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
     </head>
     <body>
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="{% url 'index' %}">Network</a>
+            <a href="{% url 'index' %}"><img class="logo" src="{% static '/network/images/logo.png' %}"></a>
           
             <div>
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' user.username %}"><strong>{{ user.username }}</strong></a>
+                        <a class="nav-link" id=username href="{% url 'profile' user.username %}"><strong>{{ user.username }}</strong></a>
                     </li>
-                {% endif %}
+                
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'index' %}">All Posts</a>
+                  <a class="nav-link" href="{% url 'index' %}"><i class="fas fa-users"></i></a>
                 </li>
-                {% if user.is_authenticated %}
+               
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'following' %}">Following</a>
+                        <a class="nav-link" href="{% url 'following' %}"><i class="fas fa-user-friends"></i></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'newpost' %}">New Post</a>
+                        <a class="nav-link" data-action="new" href="#" onclick=launcheditor(this)><i class="fas fa-plus"></i></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i></a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'register' %}">Register</a>

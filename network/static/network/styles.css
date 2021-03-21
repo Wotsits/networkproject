@@ -1,18 +1,56 @@
+body {
+    background-color: rgb(33, 35, 51)
+}
+
+
+
+
+
+/* Navbar styling */
+
+.navbar { 
+    display: flex;
+    position: sticky;
+    top: 0px;
+    width: 100%;
+    justify-content: space-between;
+    align-content: center
+}
+
+.logo {
+    height: 50px
+}
+
+
+
+
+
+
+/* Profile pagestyling */
+
 .profileheader {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    color: #f8f9fa;
+    margin-top: 20px
+}
+
+#followbutton {
+    color: #f8f9fa;
+    padding: 10px;
+    border: none;
+    border-top: 1px solid rgb(226,227,230);
+    border-bottom: 1px solid rgb(226,227,230);
+    background: none
+
 }
 
 .profilepic {
-    border-radius: 30%;
+    border-radius: 50%;
     object-fit: cover;
     object-position: center center;
-}
-
-.postheader {
-    display: flex;
 }
 
 .profileheader .profilepic {
@@ -20,22 +58,293 @@
     height: 200px;
 }
 
+.followcount {
+    display: flex;
+}
+
+.followcount p {
+    margin-left: 2px;
+    margin-right: 2px
+}
+
 .postheader .profilepic {
     width: 50px;
     height: 50px;
 }
 
-.posts {
+
+    
+
+
+
+
+
+/* Posts display styling including individual posts. */
+
+#posts {
     max-width: 600px;
     margin: auto;
 }
 
-.individualpost {
-    border: 1px solid black;
-    padding: 10px;
+.individual {
+    border: 1px solid rgb(226,227,230);
+    padding: 20px;
+    margin: 20px;
+    border-radius: 10px; 
+    background-color: white;
+}
+
+.postheader {
+    display: flex;
+}
+
+.postheader div {
+    margin-left: 15px
+}
+
+.postheader a {
+    text-decoration: none;
+    color: black;
+}
+
+.postheader h4 { 
+    font-size: 16px;
+    
+}
+
+.postdate {
+    font-size: 12px;
+}
+
+.postcontent { 
+    margin-top: 10px;
 }
 
 .postimage {
     height: 300px;
     width: 100%;
+    margin-bottom: 20px
+}
+
+.likecommentcount {
+    display: flex;
+}
+
+.likeheartliked {
+    fill: red;
+}
+
+.likeheartactivated {
+    fill: black;
+    animation-name: likeheartactivate;
+    animation-duration: 3s;
+    animation-fill-mode: forwards
+}
+
+.likeheartdeactivated {
+    fill: red;
+    animation-name: likeheartdeactivate;
+    animation-duration: 3s;
+    animation-fill-mode: forwards
+}
+
+@keyframes likeheartactivate {
+    0% {fill: black;}
+    100% {fill: red;}
+}
+
+@keyframes likeheartdeactivate {
+    0% {fill: red;}
+    100% {fill: black;}
+}
+
+.likecommentcount * {
+    margin-right: 5px
+}
+
+.likecommentcount i {
+    font-size: 125%
+}
+
+.controlpanel {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid rgb(226,227,230);
+    border-bottom: 1px solid rgb(226,227,230);
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 20px
+}
+
+.controlpanel button, .controlpanel i {
+    border: none;
+    background-color: white;
+    color: rgb(101, 103, 107);
+}
+
+.controlpanel *:focus, #followbutton:focus {
+    outline: none
+}
+
+.nothingmore {
+    text-align: center;
+    color: white;
+}
+
+@keyframes postanimatein {
+    from {
+        opacity: 0
+    }
+    to {
+        opacity: 1
+    }
+}
+
+
+
+
+/* post create/edit styling */
+
+#slidercontainer {
+    position: relative;
+    overflow: hidden
+}
+
+@keyframes postneweditsliderin {
+    from {
+        right: -400px;
+    }
+    to {
+        right: 0px;
+    }
+}
+
+@keyframes postneweditsliderout {
+    from {
+        right: 0px;
+    }
+    to {
+        right: -400px;
+    }
+}
+
+#postnewedit {
+    position: fixed;
+    height: 100%;
+    width: 400px;
+    top: 0px;
+    right: -400px;
+    background-color: rgba(53,56,82, 0.9);
+    animation-fill-mode: forwards;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center
+}
+
+#postnewedit i {
+    position: absolute;
+    color: white;
+    top: 0px;
+    right: 0px;
+    margin: 20px;
+    font-size: 200%;
+    font-weight: 100
+}
+
+#postnewedit h3 {
+    color: white;
+    font-weight: 100;
+    letter-spacing: 7px;
+}
+
+#postnewedit form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center
+}
+
+#postnewedit form input, #postnewedit form textarea {
+    width: 100%;
+    margin: 10px;
+    padding: 5px;
+    border-radius: 5px
+}
+
+
+
+
+.animatein {
+    animation-name: postneweditsliderin;
+    animation-duration: 1s;
+}
+
+.animateout {
+    animation-name: postneweditsliderout;
+    animation-duration: 1s;
+    right: 0px;
+}
+
+
+
+
+
+
+/* comments list and commenter styling */
+
+.commentslist {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.commenter {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px
+}
+
+.commenter textarea{
+    width: 100%;
+}
+
+
+/* login/registration form styling */
+
+.loginregistercontainer {
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginregister {
+    width: 90%;
+    max-width: 400px;
+    position: fixed;
+    background-color: #353852;
+    border-radius: 10px;
+    padding: 20px
+}
+
+.loginregister h2 {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+    font-weight: 100;
+    letter-spacing:3px;
+}
+
+.loginregister p {
+    margin-top: 20px;
+    color: white
+}
+
+.loginregister * {
+    width: 100%;
+    text-align: center
 }
